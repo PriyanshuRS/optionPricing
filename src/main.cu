@@ -2,22 +2,20 @@
 #include<curand_kernel.h>
 #include<random>
 #include<iostream>
-#include "../include/sum_reduction.cuh"
-#include "../include/payoffs.cuh"
-#include "../include/european.cuh"
+#include "../include/options.cuh"
 
 int main(){
-    float S0    = 101.0f;
-    float K     = 100.0f;
-    float r     = 0.05f;
-    float T     = 1.0f;
+    float S0    = 447.84f;
+    float K     = 447.5f;
+    float r     = 0.0417f;
+    float T     = 3.0f/252.0f;
     int nSim  = 500000;
     int nSteps = 1000;
-    float v0    = 0.01f;
-    float theta = 0.04f;
-    float k     = 1.5f;
-    float xi    = 0.1f;
-    float rho   = 0.0f;
+    float v0    = 0.1913f;
+    float theta = 0.1654f;
+    float k     = 4.0f;
+    float xi    = 0.019f;
+    float rho   = -0.4f;
 
     int block=256;
     int grid=(nSim+block-1)/block;

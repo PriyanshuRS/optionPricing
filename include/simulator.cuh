@@ -10,8 +10,7 @@ __global__ void init_curand_kernel(curandState *state, unsigned long seed, int n
 }
 
 template<typename CallPut>
-
-__global__ void monte_carlo(float S0,float *payoffs, float K, float r,float stdev,float T,float k, float theta,float rho,float xi ,unsigned int nSim,unsigned int nSteps, curandState *state){
+__global__ void monte_carlo_euro(float S0,float *payoffs, float K, float r,float stdev,float T,float k, float theta,float rho,float xi ,unsigned int nSim,unsigned int nSteps, curandState *state){
     int tid= blockIdx.x*blockDim.x+ threadIdx.x;
 
     if(tid<nSim){
@@ -33,6 +32,67 @@ __global__ void monte_carlo(float S0,float *payoffs, float K, float r,float stde
         }
 
         payoffs[tid]=payoff(S,K);
+        state[tid]=localstate;
+    }
+}
+
+template<typename CallPut>
+__global__ void monte_carlo_asia(float S0,float *payoffs, float K, float r,float stdev,float T,float k, float theta,float rho,float xi ,unsigned int nSim,unsigned int nSteps, curandState *state){
+    int tid= blockIdx.x*blockDim.x+ threadIdx.x;
+
+    if(tid<nSim){
+        curandState localstate=state[tid];
+        float dt=T/nSteps;
+        float S=S0;
+        float v=stdev;
+
+        CallPut payoff;
+        double sum=0;
+        for(int i=0;i<nSteps;i++){
+            float dW1=curand_normal(&localstate);
+            float dW2=rho*dW1+sqrtf(1.0f-rho*rho)*curand_normal(&localstate);
+            float vpos=fmaxf(v,0.0f);
+            v=v+k*(theta-vpos)*dt+dW2*sqrtf(vpos)*sqrtf(dt)*xi;
+            v=fmaxf(v,0.0f);
+            S=S*expf((r-0.5f*v)*dt+sqrtf(v)*sqrtf(dt)*dW1);
+            sum+=S;
+        }
+        float S_f= sum/nSteps;
+        payoffs[tid]=payoff(S_f,K);
+        state[tid]=localstate;
+    }
+}
+
+template<typename CallPut>
+__global__ void monte_carlo_lookback(float S0,float *payoffs, float K, float r,float stdev,float T,float k, float theta,float rho,float xi ,unsigned int nSim,unsigned int nSteps, curandState *state){
+    int tid= blockIdx.x*blockDim.x+ threadIdx.x;
+
+    if(tid<nSim){
+        curandState localstate=state[tid];
+        float dt=T/nSteps;
+        float S=S0;
+        float v=stdev;
+
+        CallPut payoff;
+        float minn=S;
+        float maxx=S;
+        for(int i=0;i<nSteps;i++){
+            float dW1=curand_normal(&localstate);
+            float dW2=rho*dW1+sqrtf(1.0f-rho*rho)*curand_normal(&localstate);
+            float vpos=fmaxf(v,0.0f);
+            v=v+k*(theta-vpos)*dt+dW2*sqrtf(vpos)*sqrtf(dt)*xi;
+            v=fmaxf(v,0.0f);
+            S=S*expf((r-0.5f*v)*dt+sqrtf(v)*sqrtf(dt)*dW1);
+            minn=min(minn,S);
+            maxx=max(maxx,S);
+        }
+        
+        if constexpr(std::is_same_v<CallPut, Call>){
+            payoffs[tid]=payoff(maxx,K);
+        }
+        else if constexpr(std::is_same_v<CallPut , Put>){
+            payoffs[tid]=payoff(minn,K);
+        }
         state[tid]=localstate;
     }
 }
