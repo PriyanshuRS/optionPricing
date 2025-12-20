@@ -1,5 +1,4 @@
 #pragma once
-#include "payoffs.cuh"
 #include "sum_reduction.cuh"
 #include "simulator.cuh"
 

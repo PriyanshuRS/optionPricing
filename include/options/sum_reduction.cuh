@@ -1,6 +1,6 @@
 #pragma once
 
-__global__ void sum_kernel(const float* __restrict__ in,float* __restrict__ partial, int n) {
+static __global__ void sum_kernel(const float* __restrict__ in,float* __restrict__ partial, int n) {
     int tid=blockIdx.x*blockDim.x+threadIdx.x;
     if(tid<n)
         partial[tid]=in[tid];
@@ -8,7 +8,7 @@ __global__ void sum_kernel(const float* __restrict__ in,float* __restrict__ part
         partial[tid]=0.0f;
 }
 
-__global__ void reduce_kernel(float* data, int n) {
+static __global__ void reduce_kernel(float* data, int n) {
     extern __shared__ float sdata[];
 
     int tid=threadIdx.x;
