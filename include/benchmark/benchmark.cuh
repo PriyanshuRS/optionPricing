@@ -28,8 +28,8 @@ public:
         cudaEventElapsedTime(&elapsed_, start_, stop_);
     }
 
-    inline void report(const char* label, int nSim) const{
-        double paths_per_sec=nSim/(elapsed_ * 1e-3);
+    inline void report(const char* label,int nSim) const{
+        double paths_per_sec=nSim/(elapsed_*1e-3);
         std::cout << label << ":\n"
                   << "  Time       : " << elapsed_ << " ms\n"
                   << "  Throughput : "
@@ -39,9 +39,6 @@ public:
 
 
 };
-
-#pragma once
-#include <chrono>
 
 class Timer {
 private:
@@ -56,7 +53,7 @@ public:
     }
 
     void report() const{
-        std::cout<<"Total time "<<std::chrono::duration<double,std::milli>(t1_-t0_).count()<<" ms\n";
+        std::cout<<"Total time "<<std::chrono::duration_cast<std::chrono::duration<double,std::milli>>(t1_-t0_).count()<<" ms\n";
     }
 
 };

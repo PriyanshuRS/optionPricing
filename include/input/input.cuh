@@ -15,6 +15,7 @@ enum class PayoffType{
 };
 
 struct InputParams{
+    bool runCpu;
     OptionType option;
     PayoffType payoff;
 
@@ -47,6 +48,17 @@ T prompt_value(const std::string& label,T default_val){
     T value;
     ss>>value;
     return value;
+}
+
+static bool prompt_run_cpu(){
+    std::cout << "Run CPU simulation for comparison? (1/0) [0]: ";
+    std::string line;
+    std::getline(std::cin, line);
+
+    if (line.empty()) return false;
+
+    int choice=std::stoi(line);
+    return choice;
 }
 
 static OptionType prompt_option_type(){
@@ -85,6 +97,7 @@ InputParams input(){
 
     std::cout<<"==== Monte Carlo Heston Model Option Pricing ====\n";
 
+    p.runCpu = prompt_run_cpu();
     p.option =prompt_option_type();
     p.payoff =prompt_payoff_type();
 
@@ -96,7 +109,7 @@ InputParams input(){
     p.r =prompt_value("Risk-free rate r", 0.0738f);
     p.v0 = prompt_value("Initial Variance", 0.01f);
     p.k = prompt_value("Mean Reversion Rate", 0.0f);
-    p.theta= prompt_value("Terminal Variance", 0.01f);
+    p.theta= prompt_value("Terminal Variance", 0.0f);
     p.rho =prompt_value("Correlation factor", 0.0f);
     p.xi=prompt_value("Volitility of Variance", 0.0f);
 

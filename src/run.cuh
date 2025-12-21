@@ -1,5 +1,7 @@
 #pragma once
 #include<iostream>
+
+#include "../include/cpu/options.h"
 #include "../include/options/options.cuh"
 #include "../include/benchmark/benchmark.cuh"
 
@@ -21,7 +23,7 @@ void run_gpu(float S0, float K,float T,float r,float v0,float k, float theta,flo
     cudaDeviceSynchronize();
 
     bench_rng.stop();
-    bench_rng.report("RNG",nSim);
+    bench_rng.report("\nRNG",nSim);
     
     float *d_payoffs;
     cudaMalloc(&d_payoffs, nSim*sizeof(float));
@@ -43,5 +45,22 @@ void run_gpu(float S0, float K,float T,float r,float v0,float k, float theta,flo
     timer.stop();
     timer.report();
 
-    std::cout<< "Option Price: " << price << std::endl;
+    std::cout<< "\nOption Price: " << price << std::endl;
+}
+
+template<typename OptionType>
+void run_cpu(float S0,float K,float T,float r,float v0,float k,float theta,float rho,float xi,int nSim,int nSteps){
+    std::cout<<"\nMonte Carlo Simulation on CPU only ";
+    Timer timer;
+    timer.start();
+    OptionType option(S0, K, T, r, v0, k, theta, rho, xi);
+
+    std::vector<float> payoffs(nSim);
+    option.simulate(payoffs, nSim, nSteps);
+
+    float price=option.calculate(payoffs,r,T);
+    timer.stop();
+    timer.report();
+
+    std::cout<<"CPU Option Price: "<<price<<std::endl;
 }
