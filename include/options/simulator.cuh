@@ -25,9 +25,9 @@ __global__ void monte_carlo_euro(float S0,float *payoffs, float K, float r,float
             float dW1=curand_normal(&localstate);
             float dW2=rho*dW1+sqrtf(1.0f-rho*rho)*curand_normal(&localstate);
             float vpos=fmaxf(v,0.0f);
+            S=S*expf((r-0.5f*vpos)*dt+sqrtf(vpos)*sqrtf(dt)*dW1);
             v=v+k*(theta-vpos)*dt+dW2*sqrtf(vpos)*sqrtf(dt)*xi;
             v=fmaxf(v,0.0f);
-            S=S*expf((r-0.5f*v)*dt+sqrtf(v)*sqrtf(dt)*dW1);
 
         }
 
@@ -52,9 +52,9 @@ __global__ void monte_carlo_asia(float S0,float *payoffs, float K, float r,float
             float dW1=curand_normal(&localstate);
             float dW2=rho*dW1+sqrtf(1.0f-rho*rho)*curand_normal(&localstate);
             float vpos=fmaxf(v,0.0f);
+            S=S*expf((r-0.5f*vpos)*dt+sqrtf(vpos)*sqrtf(dt)*dW1);
             v=v+k*(theta-vpos)*dt+dW2*sqrtf(vpos)*sqrtf(dt)*xi;
             v=fmaxf(v,0.0f);
-            S=S*expf((r-0.5f*v)*dt+sqrtf(v)*sqrtf(dt)*dW1);
             sum+=S;
         }
         float S_f= sum/(nSteps+1);
@@ -80,9 +80,9 @@ __global__ void monte_carlo_lookback(float S0,float *payoffs, float K, float r,f
             float dW1=curand_normal(&localstate);
             float dW2=rho*dW1+sqrtf(1.0f-rho*rho)*curand_normal(&localstate);
             float vpos=fmaxf(v,0.0f);
+            S=S*expf((r-0.5f*vpos)*dt+sqrtf(vpos)*sqrtf(dt)*dW1);
             v=v+k*(theta-vpos)*dt+dW2*sqrtf(vpos)*sqrtf(dt)*xi;
             v=fmaxf(v,0.0f);
-            S=S*expf((r-0.5f*v)*dt+sqrtf(v)*sqrtf(dt)*dW1);
             minn=fminf(minn,S);
             maxx=fmaxf(maxx,S);
         }

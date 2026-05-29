@@ -18,16 +18,18 @@ class European{
         }
         
         float calculate(float *d_arr,int n,float r,float T){
+            int block =256;
+            int grid =256;
+            if (n<block*grid) grid=(n+block-1)/block;
+            
             float *d_partial;
-            cudaMalloc(&d_partial,n*sizeof(float));
+            cudaMalloc(&d_partial, grid*sizeof(float));
 
-            int block=256;
-            int grid=(n+block-1)/block;
-
-            sum_kernel<<<grid,block>>>(d_arr,d_partial,n);
-            reduce_kernel<<<1,block, block*sizeof(float)>>>(d_partial,n);
+            reduce_blocks_kernel<<<grid, block, block * sizeof(float)>>>(d_arr, d_partial, n);
+            reduce_final_kernel<<<1, block, block * sizeof(float)>>>(d_partial, d_partial, grid);
+            
             float sum;
-            cudaMemcpy(&sum, d_partial,sizeof(float),cudaMemcpyDeviceToHost);
+            cudaMemcpy(&sum, d_partial, sizeof(float), cudaMemcpyDeviceToHost);
 
             cudaFree(d_partial);
             return std::exp(-r*T)*sum/n;
@@ -50,16 +52,18 @@ class Asian{
         }
         
         float calculate(float *d_arr,int n,float r,float T){
+            int block =256;
+            int grid =256;
+            if (n<block*grid) grid=(n+block-1)/block;
+            
             float *d_partial;
-            cudaMalloc(&d_partial,n*sizeof(float));
+            cudaMalloc(&d_partial,grid*sizeof(float));
 
-            int block=256;
-            int grid=(n+block-1)/block;
-
-            sum_kernel<<<grid,block>>>(d_arr,d_partial,n);
-            reduce_kernel<<<1,block, block*sizeof(float)>>>(d_partial,n);
+            reduce_blocks_kernel<<<grid, block, block * sizeof(float)>>>(d_arr, d_partial, n);
+            reduce_final_kernel<<<1, block, block * sizeof(float)>>>(d_partial, d_partial, grid);
+            
             float sum;
-            cudaMemcpy(&sum, d_partial,sizeof(float),cudaMemcpyDeviceToHost);
+            cudaMemcpy(&sum, d_partial, sizeof(float), cudaMemcpyDeviceToHost);
 
             cudaFree(d_partial);
             return std::exp(-r*T)*sum/n;
@@ -82,16 +86,18 @@ class Lookback{
         }
         
         float calculate(float *d_arr,int n,float r,float T){
+            int block =256;
+            int grid =256;
+            if (n<block*grid) grid=(n+block-1)/block;
+            
             float *d_partial;
-            cudaMalloc(&d_partial,n*sizeof(float));
+            cudaMalloc(&d_partial,grid*sizeof(float));
 
-            int block=256;
-            int grid=(n+block-1)/block;
-
-            sum_kernel<<<grid,block>>>(d_arr,d_partial,n);
-            reduce_kernel<<<1,block, block*sizeof(float)>>>(d_partial,n);
+            reduce_blocks_kernel<<<grid, block, block * sizeof(float)>>>(d_arr, d_partial, n);
+            reduce_final_kernel<<<1, block, block * sizeof(float)>>>(d_partial, d_partial, grid);
+            
             float sum;
-            cudaMemcpy(&sum, d_partial,sizeof(float),cudaMemcpyDeviceToHost);
+            cudaMemcpy(&sum, d_partial, sizeof(float), cudaMemcpyDeviceToHost);
 
             cudaFree(d_partial);
             return std::exp(-r*T)*sum/n;
